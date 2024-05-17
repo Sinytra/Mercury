@@ -179,6 +179,7 @@ artifacts {
 license {
     setHeader(file("HEADER"))
     exclude("org.cadixdev.$artifactId.jdt.".replace('.', '/'))
+    exclude("org/cadixdev/$artifactId/shadow")
 }
 
 val isSnapshot = true
