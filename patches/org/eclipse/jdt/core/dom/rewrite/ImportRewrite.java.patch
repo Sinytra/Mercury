@@ -147,10 +147,10 @@
  					return ImportRewriteContext.RES_NAME_FOUND;
  				}
 +				}
- 				
+ 
  				if (this.astRoot != null) {
  					List<AbstractTypeDeclaration> types = this.astRoot.types();
-@@ -1304,7 +1357,28 @@
+@@ -1305,7 +1358,28 @@
  	 * @throws CoreException the exception is thrown if the rewrite fails.
  	 */
  	public final TextEdit rewriteImports(IProgressMonitor monitor) throws CoreException {
@@ -179,7 +179,7 @@
  		SubMonitor subMonitor = SubMonitor.convert(monitor,
  				Messages.bind(Messages.importRewrite_processDescription), 2);
  		if (!hasRecordedChanges()) {
-@@ -1325,7 +1399,7 @@
+@@ -1326,7 +1400,7 @@
  		ImportRewriteConfiguration config= buildImportRewriteConfiguration();
  
  		ImportRewriteAnalyzer computer=
@@ -188,7 +188,7 @@
  
  		for (String addedImport : this.addedImports) {
  			boolean isStatic = STATIC_PREFIX == addedImport.charAt(0);
-@@ -1368,11 +1442,17 @@
+@@ -1369,11 +1443,17 @@
  		configBuilder.setTypeOnDemandThreshold(this.importOnDemandThreshold);
  		configBuilder.setStaticOnDemandThreshold(this.staticImportOnDemandThreshold);
  

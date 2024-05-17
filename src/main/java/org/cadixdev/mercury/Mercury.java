@@ -152,12 +152,12 @@ public final class Mercury {
     }
 
     public Optional<ITypeBinding> createTypeBinding(String className) {
-        if (isAnonymousOrLocalType(className)) {
-            // TODO: Anonymous or local types are currently not supported
-            // Eclipse uses source lines in their binding keys that are impossible
-            // to know in advance. Since it may return incorrect results, abort early.
-            return Optional.empty();
-        }
+//        if (isAnonymousOrLocalType(className)) {
+//            // TODO: Anonymous or local types are currently not supported
+//            // Eclipse uses source lines in their binding keys that are impossible
+//            // to know in advance. Since it may return incorrect results, abort early.
+//            return Optional.empty();
+//        }
 
         IBinding binding = this.requestor.createBindings(new String[]{'L' + className.replace('.', '/') + ';'})[0];
         return binding != null && binding.getKind() == IBinding.TYPE ? Optional.of((ITypeBinding) binding) : Optional.empty();

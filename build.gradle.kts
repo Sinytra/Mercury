@@ -81,6 +81,7 @@ val extract = task<Copy>("extractJdt") {
 
     include("org/eclipse/jdt/core/dom/rewrite/ImportRewrite.java")
     include("org/eclipse/jdt/internal/core/dom/rewrite/imports/*.java")
+    include("org/eclipse/jdt/internal/core/util/BindingKeyResolver*.java")
 }
 tasks["applyPatches"].inputs.files(extract)
 tasks["resetSources"].inputs.files(extract)
@@ -95,8 +96,11 @@ val renames = listOf(
         "org.eclipse.jdt.core.dom.rewrite" to "$og_group.$artifactId.jdt.rewrite.imports",
         "org.eclipse.jdt.internal.core.dom.rewrite.imports" to "$og_group.$artifactId.jdt.internal.rewrite.imports"
 )
+val classRenames = listOf(
+    "org.eclipse.jdt.internal.core.util.BindingKeyResolver" to "$og_group.$artifactId.shadow.org.eclipse.jdt.internal.core.util.BindingKeyResolver",
+)
 
-fun createRenameTask(prefix: String, inputDir: File, outputDir: File, renames: List<Pair<String, String>>): Task
+fun createRenameTask(prefix: String, inputDir: File, outputDir: File, renames: List<Pair<String, String>>, classRenames: List<Pair<String, String>>): Task
         = task<Copy>("${prefix}renameJdt") {
     destinationDir = file(outputDir)
 
@@ -105,14 +109,26 @@ fun createRenameTask(prefix: String, inputDir: File, outputDir: File, renames: L
             into("${new.replace('.', '/')}/")
         }
     }
+    classRenames.forEach { (old, new) ->
+        val oldPkg = old.substringBeforeLast('.')
+        val newPkg = new.substringBeforeLast('.')
+        from("$inputDir/${oldPkg.replace('.', '/')}") {
+            into("${newPkg.replace('.', '/')}/")
+            filter {
+                if (it.startsWith("package ")) it.replace(oldPkg, newPkg)
+                else it
+            }
+        }
+    }
 
     filter { renames.fold(it) { s, (from, to) -> s.replace(from, to) } }
+    filter { classRenames.fold(it) { s, (from, to) -> s.replace(from, to) } }
 }
 
-val renameTask = createRenameTask("", patches.target, jdtSrcDir, renames)
+val renameTask = createRenameTask("", patches.target, jdtSrcDir, renames, classRenames)
 renameTask.inputs.files(tasks["applyPatches"])
 
-tasks["makePatches"].inputs.files(createRenameTask("un", jdtSrcDir, patches.target, renames.map { (a,b) -> b to a }))
+tasks["makePatches"].inputs.files(createRenameTask("un", jdtSrcDir, patches.target, renames.map { (a,b) -> b to a }, classRenames.map { (a,b) -> b to a }))
 sourceSets["main"].java.srcDirs(renameTask)
 
 tasks.jar.configure {
@@ -141,6 +157,7 @@ tasks.shadowJar {
     relocate("org.apache", "org.cadixdev.mercury.shadow.org.apache")
     relocate("org.eclipse", "org.cadixdev.mercury.shadow.org.eclipse")
     relocate("org.osgi", "org.cadixdev.mercury.shadow.org.osgi")
+    exclude("org/eclipse/jdt/internal/core/util/BindingKeyResolver.class")
 }
 
 val sourceJar = task<Jar>("sourceJar") {
@@ -233,11 +250,11 @@ publishing {
     }
 
     repositories {
-        if (System.getenv("MAVEN_PASS") != null) {
-            maven("https://deploy.shedaniel.me/") {
+        if (System.getenv("MAVEN_URL") != null) {
+            maven(System.getenv("MAVEN_URL")) {
                 credentials {
-                    username = "shedaniel"
-                    password = System.getenv("MAVEN_PASS")
+                    username = System.getenv("MAVEN_USERNAME")
+                    password = System.getenv("MAVEN_PASSWORD")
                 }
             }
         }

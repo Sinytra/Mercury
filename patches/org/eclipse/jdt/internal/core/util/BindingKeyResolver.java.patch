@@ -1,0 +1,25 @@
+--- a/org/eclipse/jdt/internal/core/util/BindingKeyResolver.java
++++ b/org/eclipse/jdt/internal/core/util/BindingKeyResolver.java
+@@ -57,6 +57,8 @@
+ import org.eclipse.jdt.internal.compiler.lookup.VariableBinding;
+ import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
+ import org.eclipse.jdt.internal.compiler.util.HashtableOfObject;
++import org.eclipse.jdt.internal.core.util.BindingKeyParser;
++import org.eclipse.jdt.internal.core.util.Util;
+ 
+ @SuppressWarnings({"rawtypes", "unchecked"})
+ public class BindingKeyResolver extends BindingKeyParser {
+@@ -354,7 +356,12 @@
+ 	@Override
+ 	public void consumeLocalType(char[] uniqueKey) {
+ 		if (this.parsedUnit == null) {
+-			this.typeBinding = null;
++			char[][] subtypeName = new char[this.compoundName.length][];
++			System.arraycopy(this.compoundName, 0, subtypeName, 0, this.compoundName.length);
++			String[] subTypeParts = String.copyValueOf(uniqueKey).split("/");
++			String subTypeClassName = subTypeParts[subTypeParts.length - 1];
++			subtypeName[subtypeName.length - 1] = subTypeClassName.substring(0, subTypeClassName.length() - 1).toCharArray();
++            this.typeBinding = this.environment.getType(subtypeName);
+ 			return;
+ 		}
+  		for (LocalTypeBinding localTypeBinding : this.parsedUnit.localTypes.values()) {
