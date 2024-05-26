@@ -8,8 +8,6 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-
-
 public class Core {
 
     private static final String firstName = "Bob";

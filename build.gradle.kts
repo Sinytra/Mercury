@@ -180,6 +180,7 @@ license {
     setHeader(file("HEADER"))
     exclude("org.cadixdev.$artifactId.jdt.".replace('.', '/'))
     exclude("org/cadixdev/$artifactId/shadow")
+    exclude("org/cadixdev/mercury/remapper/GenericParametersHotfix.java")
 }
 
 val isSnapshot = true
