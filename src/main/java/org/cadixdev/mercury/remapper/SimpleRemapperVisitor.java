@@ -38,12 +38,7 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiFunction;
 
 /**
@@ -82,7 +77,12 @@ class SimpleRemapperVisitor extends ASTVisitor {
         if (binding.isConstructor()) {
             updateIdentifier(node, classMapping.getSimpleDeobfuscatedName());
         } else {
-            final MethodMapping mapping = findMethodMapping(declaringClass, binding);
+            MethodMapping mapping = findMethodMapping(declaringClass, binding);
+
+            if (mapping == null) {
+                mapping = GenericParametersHotfix.findGenericMapping(binding, declaringClass, this.context, this.mappings, this::findMemberMapping);
+            }
+
             if (mapping == null) {
                 return;
             }
